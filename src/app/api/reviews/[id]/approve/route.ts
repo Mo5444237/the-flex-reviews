@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma";
 
 export async function PATCH(
 	req: Request,
@@ -20,8 +21,11 @@ export async function PATCH(
 		});
 
 		return NextResponse.json(updated);
-	} catch (err: any) {
-		if (err?.code === "P2025") {
+	} catch (err) {
+		if (
+			err instanceof Prisma.PrismaClientKnownRequestError &&
+			err?.code === "P2025"
+		) {
 			return NextResponse.json(
 				{ error: "Review not found" },
 				{ status: 404 }

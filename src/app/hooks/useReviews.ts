@@ -1,10 +1,11 @@
 import {
-	Prisma,
+	$Enums,
 	Review,
 	ReviewChannel,
 	ReviewStatus,
 	ReviewType,
 } from "@/generated/prisma";
+import { Decimal } from "@/generated/prisma/runtime/index-browser";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type ReviewsParams = {
@@ -19,6 +20,58 @@ export type ReviewsParams = {
 	approved?: boolean;
 	q?: string;
 	sort?: string;
+};
+
+type aggregateResult = {
+	overallAvg: number | null;
+	byListing: {
+		listingId: string;
+		name: string;
+		slug: string;
+		count: number;
+		avgOverall: number | null;
+	}[];
+	byChannel: {
+		channel: string;
+		count: number;
+	}[];
+	byCategory: {
+		category: string;
+		avg: number | null;
+	}[];
+};
+
+export type useHostawayReviewsResult = {
+	page: number;
+	pageSize: number;
+	total: number;
+	items: (Review & {
+		listing: { id: string; name: string; slug: string } | null;
+		categories: {
+			category: $Enums.ReviewCategoryType;
+			rating: number;
+		}[];
+	})[];
+	aggregates: aggregateResult;
+};
+
+export type usePublicReviewsResult = {
+	listing: {
+		id: string;
+		name: string;
+		slug: string;
+	};
+	items: {
+		id: string;
+		ratingOverall: Decimal | null;
+		submittedAt: Date;
+		guestName: string;
+		publicReview: string;
+		categories: {
+			category: $Enums.ReviewCategoryType;
+			rating: number;
+		}[];
+	}[];
 };
 
 function toQS(params: ReviewsParams) {
@@ -39,13 +92,7 @@ export function useHostawayReviews(params: ReviewsParams) {
 				cache: "no-store",
 			});
 			if (!res.ok) throw new Error("Failed to load reviews");
-			return res.json() as Promise<{
-				page: number;
-				pageSize: number;
-				total: number;
-				items: Review[];
-				aggregates: Prisma.AggregateReview;
-			}>;
+			return res.json() as Promise<useHostawayReviewsResult>;
 		},
 		placeholderData: (previousData) => previousData,
 		staleTime: 60_000,
@@ -64,7 +111,7 @@ export function usePublicReviews(listingSlug: string) {
 				{ cache: "no-store" }
 			);
 			if (!res.ok) throw new Error("Failed to load public reviews");
-			return res.json() as Promise<{ listing: any; items: any[] }>;
+			return res.json() as Promise<usePublicReviewsResult>;
 		},
 		enabled: !!listingSlug,
 		staleTime: 60_000,
@@ -97,17 +144,20 @@ export function useApproveReview() {
 				.filter((k) => Array.isArray(k) && k[0] === "reviews");
 			const snapshots = keys.map((k) => [k, qc.getQueryData(k)] as const);
 			for (const k of keys) {
-				qc.setQueryData(k, (old: any) => {
-					if (!old) return old;
-					return {
-						...old,
-						items: old.items.map((r: any) =>
-							r.id === vars.id
-								? { ...r, isApproved: vars.isApproved }
-								: r
-						),
-					};
-				});
+				qc.setQueryData(
+					k,
+					(old: usePublicReviewsResult | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							items: old.items.map((r) =>
+								r.id === vars.id
+									? { ...r, isApproved: vars.isApproved }
+									: r
+							),
+						};
+					}
+				);
 			}
 			return { snapshots };
 		},
