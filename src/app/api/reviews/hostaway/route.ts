@@ -120,6 +120,41 @@ export async function GET(req: Request) {
 				}),
 			]);
 
+		const overallAvg =
+			overall._avg.ratingOverall != null
+				? Number(overall._avg.ratingOverall)
+				: null;
+
+		const byListingNormalized = byListing.map((b) => ({
+			listingId: b.listingId,
+			count: b._count._all,
+			avgOverall:
+				b._avg.ratingOverall != null
+					? Number(b._avg.ratingOverall)
+					: null,
+		}));
+
+		let derivedOverallAvg: number | null = null;
+		if (overallAvg == null) {
+			const perReviewMeans: number[] = [];
+			for (const r of items) {
+				const cats = r.categories ?? [];
+				if (cats.length) {
+					const sum = cats.reduce(
+						(acc: number, c: { rating: number }) =>
+							acc + Number(c.rating),
+						0
+					);
+					perReviewMeans.push(sum / cats.length);
+				}
+			}
+			if (perReviewMeans.length) {
+				derivedOverallAvg =
+					perReviewMeans.reduce((a, b) => a + b, 0) /
+					perReviewMeans.length;
+			}
+		}
+
 		// Enrich listing names for byListing
 		const listingIds = byListing.map((b) => b.listingId);
 		const listingMap = new Map<string, { name: string; slug: string }>();
@@ -138,13 +173,13 @@ export async function GET(req: Request) {
 			total,
 			items,
 			aggregates: {
-				overallAvg: overall._avg.ratingOverall,
-				byListing: byListing.map((b) => ({
+				overallAvg: overallAvg ?? derivedOverallAvg ?? null,
+				byListing: byListingNormalized.map((b) => ({
 					listingId: b.listingId,
 					name: listingMap.get(b.listingId)?.name ?? "Unknown",
 					slug: listingMap.get(b.listingId)?.slug ?? "",
-					count: b._count._all,
-					avgOverall: b._avg.ratingOverall,
+					count: b.count,
+					avgOverall: b.avgOverall,
 				})),
 				byChannel: byChannel.map((b) => ({
 					channel: b.channel,

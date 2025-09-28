@@ -4,8 +4,10 @@ import {
 	useApproveReview,
 	useHostawayReviewsResult,
 } from "@/app/hooks/useReviews";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { HoverCard, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Switch } from "@/components/ui/switch";
 import {
 	Table,
@@ -15,10 +17,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { fmtNumber, labelCat } from "@/lib/format";
+import { HoverCardContent } from "@radix-ui/react-hover-card";
 import { format } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import { CircleHelpIcon, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 type props = {
 	page: number;
@@ -27,6 +30,16 @@ type props = {
 	total: number;
 	pageSize: number;
 	isLoading: boolean;
+};
+
+const overallFor = (
+	r: NonNullable<useHostawayReviewsResult["items"][number]>
+) => {
+	if (r.ratingOverall != null) return Number(r.ratingOverall);
+	const cats = r.categories ?? [];
+	if (!cats.length) return null;
+	const sum = cats.reduce((a, c) => a + Number(c.rating), 0);
+	return sum / cats.length;
 };
 
 export default function ReviewsTable({
@@ -71,6 +84,7 @@ export default function ReviewsTable({
 							</TableRow>
 						</TableHeader>
 						<TableBody>
+							{isLoading && <TableSkeleton />}
 							{items?.map((r) => (
 								<TableRow key={r.id} className="border-b">
 									<TableCell className="p-3">
@@ -89,10 +103,49 @@ export default function ReviewsTable({
 										)}
 									</TableCell>
 									<TableCell className="p-3">
-										{r.ratingOverall
-											? r.ratingOverall.toString()
-											: "—"}
+										<HoverCard>
+											<HoverCardTrigger asChild>
+												<span className="font-medium cursor-help flex items-center gap-1.5">
+													{fmtNumber(overallFor(r))}
+													<CircleHelpIcon
+														size={14}
+														className="text-muted-foreground shrink-0"
+													/>
+												</span>
+											</HoverCardTrigger>
+
+											<HoverCardContent className="w-64 bg-white shadow-lg border border-gray-200 rounded-lg p-2">
+												<div className="text-sm font-medium mb-2">
+													Category breakdown
+												</div>
+												{r.categories?.length ? (
+													<div className="flex flex-wrap gap-2">
+														{r.categories.map(
+															(c) => (
+																<Badge
+																	key={
+																		c.category
+																	}
+																	variant="secondary"
+																	className="rounded-full"
+																>
+																	{labelCat(
+																		c.category
+																	)}
+																	: {c.rating}
+																</Badge>
+															)
+														)}
+													</div>
+												) : (
+													<div className="text-sm text-muted-foreground">
+														No category scores.
+													</div>
+												)}
+											</HoverCardContent>
+										</HoverCard>
 									</TableCell>
+
 									<TableCell className="p-3">
 										<Switch
 											className="data-[state=checked]:bg-emerald-600"
@@ -111,7 +164,7 @@ export default function ReviewsTable({
 											target="_blank"
 											className="text-emerald-600 hover:underline flex items-center"
 										>
-											<span className="mr-1">View</span>
+											<span className="mr-1">Public View</span>
 											<ExternalLink
 												className="inline-block"
 												size={14}
@@ -122,14 +175,14 @@ export default function ReviewsTable({
 							))}
 
 							{!items?.length && !isLoading ? (
-								<tr>
-									<td
+								<TableRow>
+									<TableCell
 										className="p-6 text-center text-muted-foreground"
-										colSpan={6}
+										colSpan={7}
 									>
 										No reviews found.
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							) : null}
 						</TableBody>
 					</Table>
@@ -159,5 +212,21 @@ export default function ReviewsTable({
 				</div>
 			</CardContent>
 		</Card>
+	);
+}
+
+function TableSkeleton() {
+	return (
+		<>
+			{[...Array(5)].map((_, rowIdx) => (
+				<TableRow key={rowIdx}>
+					{Array.from({ length: 7 }).map((_, cellIdx) => (
+						<TableCell key={cellIdx} className="p-3">
+							<div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+						</TableCell>
+					))}
+				</TableRow>
+			))}
+		</>
 	);
 }

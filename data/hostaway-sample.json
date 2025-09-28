@@ -15,6 +15,77 @@
 			"submittedAt": "2020-08-21 22:45:14",
 			"guestName": "Shane Finkelstein",
 			"listingName": "2B N1 A - 29 Shoreditch Heights"
+		},
+		{
+			"id": 7454,
+			"type": "host-to-guest",
+			"status": "published",
+			"rating": 8,
+			"publicReview": "Great guest, left the place tidy.",
+			"reviewCategory": [
+				{ "category": "cleanliness", "rating": 8 },
+				{ "category": "communication", "rating": 9 }
+			],
+			"submittedAt": "2020-09-10 10:15:00",
+			"guestName": "Alice Johnson",
+			"listingName": "2B N1 A - 29 Shoreditch Heights"
+		},
+		{
+			"id": 7455,
+			"type": "guest-to-host",
+			"status": "published",
+			"rating": 9,
+			"publicReview": "Host was responsive and helpful.",
+			"reviewCategory": [
+				{ "category": "communication", "rating": 9 },
+				{ "category": "cleanliness", "rating": 8 }
+			],
+			"submittedAt": "2020-10-05 14:00:00",
+			"guestName": "Bob Smith",
+			"listingName": "2B N1 A - 29 Shoreditch Heights"
+		},
+		{
+			"id": 7456,
+			"type": "host-to-guest",
+			"status": "published",
+			"rating": 7,
+			"publicReview": "Decent guest, but noisy at night.",
+			"reviewCategory": [
+				{ "category": "respect_house_rules", "rating": 6 },
+				{ "category": "cleanliness", "rating": 7 }
+			],
+			"submittedAt": "2020-11-18 20:30:00",
+			"guestName": "Charlie Davis",
+			"listingName": "Flex Soho Studio"
+		},
+		{
+			"id": 7457,
+			"type": "guest-to-host",
+			"status": "published",
+			"rating": 10,
+			"publicReview": "Amazing host, very accommodating.",
+			"reviewCategory": [
+				{ "category": "communication", "rating": 10 },
+				{ "category": "cleanliness", "rating": 10 },
+				{ "category": "location", "rating": 9 }
+			],
+			"submittedAt": "2020-12-02 09:00:00",
+			"guestName": "Dana Lee",
+			"listingName": "Flex Soho Studio"
+		},
+		{
+			"id": 7458,
+			"type": "host-to-guest",
+			"status": "published",
+			"rating": 6,
+			"publicReview": "Guest left late, minor issues.",
+			"reviewCategory": [
+				{ "category": "respect_house_rules", "rating": 5 },
+				{ "category": "communication", "rating": 7 }
+			],
+			"submittedAt": "2021-01-12 15:20:00",
+			"guestName": "Evan Thomas",
+			"listingName": "Flex Camden Loft"
 		}
 	]
 }

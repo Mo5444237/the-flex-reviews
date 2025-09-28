@@ -7,6 +7,7 @@ import {
 } from "@/generated/prisma";
 import { Decimal } from "@/generated/prisma/runtime/index-browser";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export type ReviewsParams = {
 	page?: number;
@@ -163,6 +164,14 @@ export function useApproveReview() {
 		},
 		onError: (_err, _vars, ctx) => {
 			ctx?.snapshots?.forEach(([k, data]) => qc.setQueryData(k, data));
+			toast.error("Failed to update approval");
+		},
+		onSuccess: (_data, vars) => {
+			toast.success(
+				vars.isApproved
+					? "Successfully approved review"
+					: "Successfully disapproved review"
+			);
 		},
 		onSettled: () => {
 			qc.invalidateQueries({ queryKey: ["reviews"] });

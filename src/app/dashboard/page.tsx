@@ -5,6 +5,7 @@ import { ReviewsParams, useHostawayReviews } from "@/app/hooks/useReviews";
 import ReviewsFilters from "./components/ReviewsFilters";
 import ReviewsTable from "./components/ReviewsTable";
 import ReviewsAggregates from "./components/ReviewsAggregates";
+import ReviewsCharts from "./components/ReviewsCharts";
 
 export default function DashboardPage() {
 	const [page, setPage] = useState(1);
@@ -27,7 +28,12 @@ export default function DashboardPage() {
 				pageSize={pageSize}
 				setPageSize={setPageSize}
 				setParams={setParams}
+				total={total}
+				isFetching={isFetching}
+				isLoading={isLoading}
 			/>
+
+			<ReviewsCharts data={data} isLoading={isLoading} />
 
 			<ReviewsTable
 				page={page}
@@ -35,7 +41,7 @@ export default function DashboardPage() {
 				items={items}
 				total={total}
 				pageSize={pageSize}
-				isLoading={isLoading || isFetching}
+				isLoading={isLoading}
 			/>
 
 			<ReviewsAggregates data={data} />
