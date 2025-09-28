@@ -4,14 +4,15 @@ import { Prisma } from "@/generated/prisma";
 
 export async function PATCH(
 	req: Request,
-	{ params }: { params: { id: string } }
+	context: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const { id } = await context.params;
 		const body = await req.json().catch(() => ({}));
 		const isApproved = Boolean(body?.isApproved);
 
 		const updated = await prisma.review.update({
-			where: { id: params.id },
+			where: { id: id },
 			data: { isApproved },
 			select: {
 				id: true,
